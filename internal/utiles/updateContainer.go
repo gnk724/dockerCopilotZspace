@@ -71,7 +71,14 @@ func UpdateContainer(ctx *svc.ServiceContext, id string, name string, imageNameA
 			logx.Errorf("Body.Close error: %v", err)
 		}
 	}(reader.Body)
-	decodePullResp(reader.Body, ctx, taskID)
+	err = decodePullResp(reader.Body, ctx, taskID)
+	if err != nil {
+		oldTaskProgress.Message = "拉取新镜像失败"
+		oldTaskProgress.DetailMsg = err.Error()
+		oldTaskProgress.IsDone = true
+		ctx.UpdateProgress(taskID, oldTaskProgress)
+		return err
+	}
 	oldTaskProgress, result = ctx.GetProgress(taskID)
 	if !result {
 		oldTaskProgress = svc.TaskProgress{
@@ -179,7 +186,7 @@ func UpdateContainer(ctx *svc.ServiceContext, id string, name string, imageNameA
 	return nil
 }
 
-func decodePullResp(reader io.Reader, ctx *svc.ServiceContext, taskID string) {
+func decodePullResp(reader io.Reader, ctx *svc.ServiceContext, taskID string) (err error) {
 	decoder := json.NewDecoder(reader)
 	var oldTaskProgress, result = ctx.GetProgress(taskID)
 	if !result {
@@ -203,6 +210,7 @@ func decodePullResp(reader io.Reader, ctx *svc.ServiceContext, taskID string) {
 			oldTaskProgress.IsDone = true
 			ctx.UpdateProgress(taskID, oldTaskProgress)
 			logx.Errorf("Failed to decode pull image response: %s", err)
+			return err
 		}
 		// Print the progress or error information from the response
 		if msg.Error != nil {
@@ -212,6 +220,7 @@ func decodePullResp(reader io.Reader, ctx *svc.ServiceContext, taskID string) {
 			oldTaskProgress.IsDone = true
 			ctx.UpdateProgress(taskID, oldTaskProgress)
 			logx.Errorf("Error: %s", msg.Error)
+			return fmt.Errorf("拉取镜像失败: %w", msg.Error)
 		} else {
 			var formattedMsg string
 			if msg.Progress != nil {
@@ -226,4 +235,5 @@ func decodePullResp(reader io.Reader, ctx *svc.ServiceContext, taskID string) {
 			logx.Infof("%s: %s\n", msg.Status, msg.Progress)
 		}
 	}
+	return nil
 }

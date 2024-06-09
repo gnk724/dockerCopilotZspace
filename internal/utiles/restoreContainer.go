@@ -80,7 +80,7 @@ func RestoreContainer(ctx *svc.ServiceContext, filename string, taskID string) e
 			oldProgress.DetailMsg = err.Error()
 			oldProgress.IsDone = true
 			ctx.UpdateProgress(taskID, oldProgress)
-			return err
+			continue
 		}
 		defer func(Body io.ReadCloser) {
 			err := Body.Close()
@@ -88,7 +88,14 @@ func RestoreContainer(ctx *svc.ServiceContext, filename string, taskID string) e
 				logx.Errorf("Body.Close error: %v", err)
 			}
 		}(reader.Body)
-		decodePullResp(reader.Body, ctx, taskID)
+		err = decodePullResp(reader.Body, ctx, taskID)
+		if err != nil {
+			oldProgress.Message = "拉取新镜像失败"
+			oldProgress.DetailMsg = err.Error()
+			oldProgress.IsDone = true
+			ctx.UpdateProgress(taskID, oldProgress)
+			continue
+		}
 		err = CreateContainer(ctx, containerInfo.Config, containerInfo.HostConfig, containerInfo.NetworkingConfig, containerInfo.Name)
 		if err != nil {
 			logx.Error("Failed to create container: %s", err)
