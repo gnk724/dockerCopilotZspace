@@ -200,9 +200,9 @@ func decodePullResp(reader io.Reader, ctx *svc.ServiceContext, taskID string) (e
 	}
 	for {
 		var msg dockerMsgType.JSONMessage
-		if err := decoder.Decode(&msg); err != nil {
+		if err = decoder.Decode(&msg); err != nil {
 			if err == io.EOF {
-				break
+				return nil
 			}
 			oldTaskProgress.Message = "拉取镜像失败"
 			oldTaskProgress.DetailMsg = err.Error()
@@ -235,5 +235,4 @@ func decodePullResp(reader io.Reader, ctx *svc.ServiceContext, taskID string) (e
 			logx.Infof("%s: %s\n", msg.Status, msg.Progress)
 		}
 	}
-	return nil
 }
