@@ -202,6 +202,7 @@ func decodePullResp(reader io.Reader, ctx *svc.ServiceContext, taskID string) (e
 		var msg dockerMsgType.JSONMessage
 		if err = decoder.Decode(&msg); err != nil {
 			if err == io.EOF {
+				logx.Infof("Pull image response EOF，拉取镜像完成， %+v", err)
 				return nil
 			}
 			oldTaskProgress.Message = "拉取镜像失败"
