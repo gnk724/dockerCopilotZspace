@@ -12,7 +12,7 @@ import (
 type ServiceContext struct {
 	Config                     config.Config
 	CookieCheckMiddleware      rest.Middleware
-	Jwtuuid                    string
+	JwtUuid                    string
 	BearerTokenCheckMiddleware rest.Middleware
 	JwtSecret                  string
 	Template                   *pongo2.TemplateSet

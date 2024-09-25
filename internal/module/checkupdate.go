@@ -85,7 +85,7 @@ func BuildManifestURL(image types.Image) (string, error) {
 		return "", errors.New("镜像无tag" + normalizedRef.String())
 	}
 
-	host, _ := GetRegistryAddress(normalizedTaggedRef.Name())
+	host, err := GetRegistryAddress(normalizedTaggedRef.Name())
 	img, tag := ref.Path(normalizedTaggedRef), normalizedTaggedRef.Tag()
 
 	if err != nil {
