@@ -39,7 +39,7 @@ func NewContainersListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Co
 func (l *ContainersListLogic) ContainersList() (resp *types.Resp, err error) {
 	// 获取所有容器（包括停止的容器）
 	resp = &types.Resp{}
-	list, err := utiles.GetContainerList(l.svcCtx)
+	list, err := utiles.GetContainerList(l.svcCtx, false)
 	if err != nil {
 		resp.Code = 500
 		resp.Msg = err.Error()

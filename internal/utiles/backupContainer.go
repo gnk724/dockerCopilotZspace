@@ -12,7 +12,7 @@ import (
 )
 
 func BackupContainer(ctx *svc.ServiceContext) error {
-	containerList, err := GetContainerList(ctx)
+	containerList, err := GetContainerList(ctx, false)
 	if err != nil {
 		return err
 	}

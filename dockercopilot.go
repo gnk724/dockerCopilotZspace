@@ -6,6 +6,7 @@ import (
 	"fmt"
 	loader "github.com/nathan-osman/pongo2-embed-loader"
 	"github.com/onlyLTY/dockerCopilotZspace/zspace/internal/handler"
+	"github.com/onlyLTY/dockerCopilotZspace/zspace/internal/module"
 	"github.com/onlyLTY/dockerCopilotZspace/zspace/internal/utiles"
 	"github.com/robfig/cron/v3"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -60,6 +61,7 @@ func main() {
 		logx.Errorf("panic获取镜像列表出错: %v", err)
 		panic(err)
 	}
+
 	go ctx.HubImageInfo.CheckUpdate(list)
 	corndanmu := cron.New(cron.WithParser(cron.NewParser(
 		cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow,
@@ -78,6 +80,19 @@ func main() {
 	}
 	corndanmu.Start()
 	defer corndanmu.Stop()
+
+	autoRestartContainer := os.Getenv("AUTO_RESTART_CONTAINER")
+	if autoRestartContainer == "true" {
+		corndanmu2 := cron.New(cron.WithParser(cron.NewParser(
+			cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow,
+		)))
+		_, err = corndanmu2.AddFunc("*/5 * * * *", func() {
+			module.AutoRestartContainer(ctx)
+		})
+		corndanmu2.Start()
+		defer corndanmu2.Stop()
+	}
+
 	httpx.SetErrorHandler(func(err error) (int, any) {
 		switch e := err.(type) {
 		case *errors.CodeMsg:

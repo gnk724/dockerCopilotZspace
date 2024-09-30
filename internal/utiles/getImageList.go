@@ -71,7 +71,7 @@ func splitImageNameAndTag(imagesList []MyType.Image) []MyType.Image {
 	return imagesList
 }
 func checkImageInUsed(svc *svc.ServiceContext, imageList []MyType.Image) ([]MyType.Image, error) {
-	list, err := GetContainerList(svc)
+	list, err := GetContainerList(svc, false)
 	if err != nil {
 		return imageList, err
 	}

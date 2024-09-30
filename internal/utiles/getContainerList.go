@@ -6,9 +6,10 @@ import (
 	MyType "github.com/onlyLTY/dockerCopilotZspace/zspace/internal/types"
 	"github.com/zeromicro/go-zero/core/logx"
 	"io"
+	"net/url"
 )
 
-func GetContainerList(ctx *svc.ServiceContext) ([]MyType.Container, error) {
+func GetContainerList(ctx *svc.ServiceContext, filterRunning bool) ([]MyType.Container, error) {
 	jwtToken, endpointsId, err := GetNewJwt(ctx)
 	if err != nil {
 		logx.Errorf("GetNewJwt error: %v", err)
@@ -17,8 +18,15 @@ func GetContainerList(ctx *svc.ServiceContext) ([]MyType.Container, error) {
 	}
 	client := NewCustomClient(jwtToken)
 	baseURL := domain + "/api/endpoints/" + endpointsId
-	url := baseURL + "/docker/containers/json?all=true"
-	resp, err := client.SendRequest("GET", url, nil)
+	URL := baseURL + "/docker/containers/json"
+	queryParams := url.Values{}
+	if filterRunning {
+		queryParams.Add("all", "false")
+	} else {
+		queryParams.Add("all", "true")
+	}
+	URL += "?" + queryParams.Encode()
+	resp, err := client.SendRequest("GET", URL, nil)
 	if err != nil {
 		logx.Errorf("SendRequest error: %v", err)
 		return nil, err
