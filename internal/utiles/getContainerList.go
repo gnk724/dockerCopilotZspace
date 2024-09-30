@@ -12,6 +12,7 @@ func GetContainerList(ctx *svc.ServiceContext) ([]MyType.Container, error) {
 	jwtToken, endpointsId, err := GetNewJwt(ctx)
 	if err != nil {
 		logx.Errorf("GetNewJwt error: %v", err)
+		logx.Errorf("请检查环境的account变量以及是否为hosts模式")
 		return nil, err
 	}
 	client := NewCustomClient(jwtToken)
